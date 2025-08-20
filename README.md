@@ -56,8 +56,8 @@ ffmpeg -version
 Linux (Ubuntu/Mint) Bash:
 ```bash
 # 1) Clone the repository
-git clone https://github.com/yourusername/yourproject.git
-cd yourproject
+git clone https://github.com/dross1-dross1/ytdlp.git
+cd ytdlp
 
 # 2) Create a virtual environment
 python3 -m venv .venv
