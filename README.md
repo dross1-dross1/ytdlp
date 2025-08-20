@@ -31,8 +31,8 @@ This project manages a CSV of YouTube playlists/channels and batch-downloads the
 Windows PowerShell:
 ```powershell
 # 1) Clone the repository
-git clone https://github.com/yourusername/yourproject.git
-cd yourproject
+git clone https://github.com/dross1-dross1/ytdlp.git
+cd ytdlp
 
 # 2) Create a virtual environment
 python -m venv .venv
