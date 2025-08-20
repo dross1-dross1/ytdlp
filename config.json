@@ -1,0 +1,18 @@
+{
+    "app": {
+        "csv_file": "data.csv",
+        "save_path": "Z:/scraped_youtube_videos"
+    },
+    "ytdlp": {
+        "outtmpl": "%(playlist_title)s/%(title)s.%(ext)s",
+        "format": "bestvideo+bestaudio/best",
+        "merge_output_format": "mp4",
+        "noplaylist": false,
+        "usenetrc": true,
+        "verbose": false,
+        "writethumbnail": true,
+        "writeinfojson": true,
+        "ignoreerrors": true
+    }
+}
+
