@@ -7,8 +7,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-
-CONFIG_FILE_NAME = "config.json"
+from common import project_root, load_config, get_app_config, ensure_csv
 
 # Minimal network hygiene
 DEFAULT_HEADERS = {
@@ -20,23 +19,13 @@ DEFAULT_HEADERS = {
 DEFAULT_TIMEOUT = 15
 
 
-def _project_root() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
-
-
-def _config_path() -> str:
-    return os.path.join(_project_root(), CONFIG_FILE_NAME)
-
-
 def _load_app_config() -> dict:
-    try:
-        with open(_config_path(), "r", encoding="utf-8") as fp:
-            cfg = json.load(fp)
-        return cfg.get("app", {})
-    except FileNotFoundError:
-        return {}
-    except json.JSONDecodeError:
-        return {}
+    cfg = load_config()
+    return get_app_config(cfg)
+
+
+def _ensure_csv(file_path: str) -> None:
+    ensure_csv(file_path)
 
 
 def extract_playlist_code(url: str) -> Optional[str]:
@@ -87,6 +76,7 @@ def get_channel_id_from_url(url: str, return_plid: bool = False) -> str:
 
 def append_to_playlist_data(file_path: str, url: str) -> str:
     """Append a playlist or uploads playlist by URL into the managed CSV."""
+    _ensure_csv(file_path)
     if "playlist?list=" in url:
         id_code = extract_playlist_code(url)
     elif "/@" in url:
@@ -116,7 +106,8 @@ def append_to_playlist_data(file_path: str, url: str) -> str:
 if __name__ == "__main__":
     app_cfg = _load_app_config()
     csv_cfg = app_cfg.get("csv_file", "data.csv")
-    csv_path = os.path.join(_project_root(), csv_cfg) if not os.path.isabs(csv_cfg) else csv_cfg
+    csv_path = os.path.join(project_root(), csv_cfg) if not os.path.isabs(csv_cfg) else csv_cfg
+    _ensure_csv(csv_path)
 
     while True:
         url_in = input("Enter YouTube playlist/channel URL (or 'exit' to quit): ")

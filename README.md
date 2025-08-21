@@ -28,6 +28,8 @@ This project manages a CSV of YouTube playlists/channels and batch-downloads the
 - Optional auth: `.netrc` for YouTube/Google login if needed by yt-dlp
 
 ### 3) Installation (step-by-step)
+The steps are aligned between Windows and Linux as much as possible.
+
 Windows PowerShell:
 ```powershell
 # 1) Clone the repository
@@ -106,21 +108,17 @@ machine google.com
   password YOUR_APP_PASSWORD
 ```
 
-Location and permissions:
-- Windows: `%USERPROFILE%\.netrc` (recommended for yt-dlp). Example to create via PowerShell:
+Location and permissions (use `.netrc` only):
+- Windows: `%USERPROFILE%\.netrc`. Example to create via PowerShell:
 ```powershell
 notepad $env:USERPROFILE\.netrc
 # Paste the entries, save the file, then close Notepad.
-```
-  Alternative: `%USERPROFILE%\_netrc`. If you use `_netrc`, you can point tools to it via the `NETRC` environment variable:
-```powershell
-setx NETRC "$env:USERPROFILE\_netrc"
 ```
 - Linux: `~/.netrc`
 ```bash
 nano ~/.netrc
 # Paste the entries, save, exit
-chmod 600 ~/.netrc
+chmod 644 ~/.netrc
 ```
 
 ### 6) Configuration (config.json)
@@ -187,20 +185,21 @@ domain=YOUR_DOMAIN_OR_LEAVE_EMPTY
 EOF'
 sudo chmod 600 /etc/cifs-credentials
 ```
-4. Mount once to test:
+4. Mount once to test (mount as your user, not only root; set ownership/permissions so files are accessible):
 ```bash
-sudo mount -t cifs //NAS_HOST/Share /mnt/nas -o credentials=/etc/cifs-credentials,iocharset=utf8,file_mode=0775,dir_mode=0775
+sudo mount -t cifs //NAS_HOST/Share /mnt/nas \
+  -o credentials=/etc/cifs-credentials,iocharset=utf8,uid=$(id -u),gid=$(id -g),file_mode=0664,dir_mode=0775
 ```
-5. Make it persistent at boot (fstab):
+5. Make it persistent at boot (fstab) with correct ownership:
 ```bash
-sudo bash -c 'echo "//NAS_HOST/Share /mnt/nas cifs credentials=/etc/cifs-credentials,iocharset=utf8,file_mode=0775,dir_mode=0775 0 0" >> /etc/fstab'
+sudo bash -c 'echo "//NAS_HOST/Share /mnt/nas cifs credentials=/etc/cifs-credentials,iocharset=utf8,uid=1000,gid=1000,file_mode=0664,dir_mode=0775 0 0" >> /etc/fstab'
 sudo mount -a
 ```
 6. Verify access:
 ```bash
 df -h | grep /mnt/nas || ls -la /mnt/nas
 ```
-7. Set `config_opts.json` `app.save_path` to `/mnt/nas/scraped_youtube_videos` and ensure the directory exists:
+7. Set `config.json` `app.save_path` to `/mnt/nas/scraped_youtube_videos` and ensure the directory exists:
 ```bash
 mkdir -p /mnt/nas/scraped_youtube_videos
 ```

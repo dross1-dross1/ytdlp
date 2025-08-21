@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime
 from typing import Dict, Any
 
@@ -7,26 +6,15 @@ import pandas as pd
 from pandas import Timestamp
 from yt_dlp import YoutubeDL
 
-
-CONFIG_FILE_NAME = "config.json"
-
-
-def _project_root() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
-
-
-def _config_path() -> str:
-    return os.path.join(_project_root(), CONFIG_FILE_NAME)
-
-
-def _load_config() -> Dict[str, Any]:
-    try:
-        with open(_config_path(), "r", encoding="utf-8") as fp:
-            return json.load(fp)
-    except FileNotFoundError:
-        return {}
-    except json.JSONDecodeError:
-        return {}
+from common import (
+    project_root,
+    load_config,
+    get_app_config,
+    get_ytdlp_config,
+    resolve_csv_path,
+    ensure_csv,
+    resolve_save_path,
+)
 
 
 def get_ydl_opts(save_path: str, ytdlp_cfg: Dict[str, Any]) -> Dict[str, Any]:
@@ -64,20 +52,16 @@ def sort_playlists_by_date_and_priority(df: pd.DataFrame) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    cfg = _load_config()
-    app_cfg = cfg.get("app", {})
-    ytdlp_cfg = cfg.get("ytdlp", {})
+    cfg = load_config()
+    app_cfg = get_app_config(cfg)
+    ytdlp_cfg = get_ytdlp_config(cfg)
 
-    csv_cfg = app_cfg.get("csv_file", "data.csv")
-    if not os.path.isabs(csv_cfg):
-        csv_file_name = os.path.join(_project_root(), csv_cfg)
-    else:
-        csv_file_name = csv_cfg
+    csv_file_name = resolve_csv_path(app_cfg)
+    save_path = resolve_save_path(app_cfg)
 
-    save_cfg = app_cfg.get("save_path", os.path.join(_project_root(), "downloads"))
-    save_path = os.path.abspath(os.path.expanduser(save_cfg))
-    os.makedirs(save_path, exist_ok=True)
-
+    # Ensure CSV exists with headers to avoid first-run crashes
+    if not os.path.exists(csv_file_name):
+        ensure_csv(csv_file_name)
     loaded_playlist_data = pd.read_csv(csv_file_name, encoding="utf-8")
     for _, pl_entry in sort_playlists_by_date_and_priority(loaded_playlist_data).iterrows():
         if pl_entry["priority"] != -1:
